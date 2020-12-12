@@ -2,3 +2,4 @@
 DROP TABLE [Departments]
 DROP TABLE [Faculties]
 DROP TABLE [Teachers]
+
