@@ -2,7 +2,10 @@
 DROP TABLE [Departments]
 DROP TABLE [Faculties]
 DROP TABLE [Teachers]
-DROP TABLE [GroupsLectures]
 DROP TABLE [Lectures]
 DROP TABLE [Subjects]
-
+DROP TABLE [Curators]
+DROP TABLE [GroupsLectures]
+DROP TABLE [GroupsCurators]
+DROP TABLE [GroupsStudents]
+DROP TABLE [Students]
