@@ -1,0 +1,231 @@
+﻿-- Задание 1. Для базы данных «Спортивный магазин» из практического задания модуля «Триггеры, хранимые про-
+-- цедуры и пользовательские функции» создайте следующие хранимые процедуры:
+
+-- 1. Хранимая процедура отображает полную информацию о всех товарах
+-- CREATE PROCEDURE
+--	AllProducts
+--AS
+--	SELECT
+--		*
+--	FROM
+--		Products
+
+-- 2. Хранимая процедура показывает полную информацию о товаре конкретного вида. Вид товара передаётся в качестве параметра. 
+-- Например, если в качестве параметра указана обувь, нужно показать всю обувь, которая есть в наличии
+--CREATE PROCEDURE
+--	AllTypeProducts
+--	@type_name NVARCHAR
+--AS
+--	SELECT
+--		*
+--	FROM
+--		Products P
+--	WHERE
+--		P.[Name] = @type_name
+
+-- 3. Хранимая процедура показывает топ-3 самых старых клиентов. Топ-3 определяется по дате регистрации
+-- CREATE PROCEDURE
+--	Top3Clients
+--AS
+--	SELECT TOP 3
+--		*
+--	FROM
+--		Clients C
+--	ORDER BY
+--		C.[Date] DESC
+
+-- 4. Хранимая процедура показывает информацию о самом успешном продавце. Успешность определяется по общей
+-- сумме продаж за всё время
+--CREATE PROCEDURE
+--	BestManager
+--AS
+--	SELECT TOP 1
+--		MAX(M.[Name]) AS [Name],
+--		SUM(S.Cnt * P.Price) AS [Suma]
+--	FROM
+--		Sales S
+--		JOIN Products P ON P.ID = S.ID_product
+--		JOIN Managers M ON M.ID = S.ID_manager
+--	GROUP BY
+--		M.[Id]
+--	ORDER BY
+--		SUM(S.Cnt * P.Price) DESC
+
+-- 5. Хранимая процедура проверяет есть ли хоть один товар указанного производителя в наличии. Название произво-
+-- дителя передаётся в качестве параметра. По итогам работы хранимая процедура должна вернуть yes в том случае, если
+-- товар есть, и no, если товара нет
+--CREATE PROCEDURE
+--	AvailProdProducts
+--	@name_prod NVARCHAR
+--AS
+--	SELECT
+--		P.[Name_Prod] AS [Name_Prod],
+--		(
+--			SELECT
+--				CASE
+--					WHEN COUNT(Pr.[Name_Prod]) > 0 THEN 'YES'
+--					ELSE 'NO'
+--				END
+--			FROM
+--				Products Pr
+--			WHERE
+--				Pr.[Name_Prod] = @name_prod
+--		) AS [YES/NO]
+--	FROM
+--		Products P
+
+-- 6. Хранимая процедура отображает информацию о самом популярном производителе среди покупателей. Популярность
+-- среди покупателей определяется по общей сумме продаж
+--CREATE PROCEDURE
+--	TopProdProducts
+--AS
+--	SELECT TOP 1
+--		MAX(P.[Name_Prod]) AS [Name_Prod],
+--		SUM(S.Cnt * P.Price) AS [Suma]
+--	FROM
+--		Sales S
+--		JOIN Products P ON P.ID = S.ID_product
+--	GROUP BY
+--		P.[Id]
+--	ORDER BY
+--		SUM(S.Cnt * P.Price) DESC
+
+-- 7. Хранимая процедура удаляет всех клиентов, зарегистрированных после указанной даты. Дата передаётся в качестве
+-- параметра. Процедура возвращает количество удаленных записей.
+--CREATE PROCEDURE
+--	DelClientDateReg
+--	@date_reg DATE
+--AS
+--	SELECT
+--	COUNT(Tmp.[Count]) AS [Delete, Cnt]
+--	FROM
+--	(
+--		SELECT
+--			MAX(C.[Date_reg]) AS [Date_reg],
+--			COUNT(C.[Id]) AS [Count]
+--		FROM
+--			Clients C
+--		WHERE
+--			C.[Date_reg] > date_reg
+--		GROUP BY
+--			C.[Id]
+--	) AS Tmp
+--	DELETE FROM Lectures
+--	WHERE [Date_reg] > date_reg
+
+
+-- Задание 2. Для базы данных «Музыкальная коллекция» из практического задания модуля «Работа с таблицами и пред-
+-- ставлениями в MS SQL Server» создайте следующие хранимые процедуры:
+
+-- 1. Хранимая процедура показывает полную информацию о музыкальных дисках
+-- CREATE PROCEDURE
+--	AllMusicDiscs
+--AS
+--	SELECT
+--		*
+--	FROM
+--		MusicCollection		
+
+-- 2. Хранимая процедура показывает полную информацию о всех музыкальных дисках конкретного издателя. 
+-- Название издателя передаётся в качестве параметра
+--CREATE PROCEDURE
+--	AllTypeMusicDiscs
+--	@type_name NVARCHAR
+--AS
+--	SELECT
+--		*
+--	FROM
+--		MusicCollection M
+--	WHERE
+--		M.[Name_prod] = @type_name
+
+-- 3. Хранимая процедура показывает название самого популярного стиля. Популярность стиля определяется 
+-- по количеству дисков в коллекции
+--CREATE PROCEDURE
+--	BestStyleMusics
+--AS
+--	SELECT TOP 1
+--		MAX(M.[Style]) AS [Style],
+--		COUNT(M.[Name_disc]) AS [Style, Cnt]
+--	FROM
+--		MusicCollection M
+--	GROUP BY
+--		M.[Style]
+--	ORDER BY
+--		COUNT(M.[Name_disc]) DESC
+
+-- 4. Хранимая процедура отображает информацию о диске конкретного стиля с наибольшим количеством песен. Название
+-- стиля передаётся в качестве параметра, если передано слово all, анализ идёт по всем стилям
+--CREATE PROCEDURE
+--	InfoDiscMoreSongs
+--	@style NVARCHAR
+--AS
+--	SELECT
+--		CASE
+--			WHEN @style = N'all' THEN (SELECT * FROM MusicCollection M WHERE M.[Songs] = 
+--									  (SELECT MAX(M.[Songs]) FROM MusicCollection M))
+--			ELSE (SELECT * FROM MusicCollection M WHERE M.[Style] = @style AND M.[Songs] = 
+--				 (SELECT MAX(M.[Songs]) FROM MusicCollection M WHERE M.[Style] = @style))
+--		END
+--	FROM
+--		MusicCollection M
+
+-- 5. Хранимая процедура удаляет все диски заданного стиля. Название стиля передаётся в качестве параметра. Процедура
+-- возвращает количество удаленных альбомов
+--CREATE PROCEDURE
+--	DelDiscToStyle
+--	@style NVARCHAR
+--AS
+--	SELECT
+--	COUNT(Tmp.[Count]) AS [Delete, Cnt]
+--	FROM
+--	(
+--		SELECT
+--			MAX(M.[Style]) AS [Style],
+--			COUNT(M.[Id]) AS [Count]
+--		FROM
+--			MusicCollection M
+--		WHERE
+--			M.[Style] = @style
+--		GROUP BY
+--			M.[Id]
+--	) AS Tmp
+--	DELETE FROM MusicCollection
+--	WHERE [Style] = @style
+
+-- 6. Хранимая процедура отображает информацию о самом «старом» альбом и самом «молодом». Старость и молодость
+-- определяются по дате выпуска
+--CREATE PROCEDURE
+--	TopOldNewDisc
+--AS
+--	SELECT
+--		*
+--	FROM
+--		MusicCollection M
+--	WHERE
+--		M.[Date_prod] = (SELECT MAX(M.[Date_prod]) FROM MusicCollection M) OR
+--		M.[Date_prod] = (SELECT MIN(M.[Date_prod]) FROM MusicCollection M)
+
+-- 7. Хранимая процедура удаляет все диски в названии которых есть заданное слово. Слово передаётся в качестве
+-- параметра. Процедура возвращает количество удаленных альбомов.
+--CREATE PROCEDURE
+--	DelDiscToStyle
+--	@word NVARCHAR
+--AS
+--	SELECT
+--	COUNT(Tmp.[Count]) AS [Delete, Cnt]
+--	FROM
+--	(
+--		SELECT
+--			MAX(M.[Name]) AS [Name],
+--			COUNT(M.[Id]) AS [Count]
+--		FROM
+--			MusicCollection M
+--		WHERE
+--			M.[Name] LIKE '%@word%'
+--		GROUP BY
+--			M.[Id]
+--	) AS Tmp
+--	DELETE FROM MusicCollection
+--	WHERE [Name] = '%@word%'
+	
