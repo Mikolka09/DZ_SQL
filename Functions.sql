@@ -1,0 +1,250 @@
+﻿-- Задание 1. Для базы данных «Спортивный магазин» из практического задания модуля «Триггеры, хранимые 
+-- процедуры и пользовательские функции» создайте следующие пользовательские функции:
+
+-- 1. Пользовательская функция возвращает количество уникальных покупателей
+--CREATE FUNCTION
+--	UniqueBuyer()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT 
+--				COUNT(Buyer_Cnt.[Cnt]) AS [UniqueBuyer]
+--			FROM
+--				(SELECT
+--					B.[Name] + ' ' + B.[Surname] AS [Buyer],
+--					COUNT (B.[Id]) AS Cnt
+--				FROM
+--					Buyers B
+--				GROUP BY
+--					B.[Name] + ' ' + B.[Surname]
+--				) AS Buyer_Cnt
+--			WHERE
+--				Buyer_Cnt.[Cnt] = 1
+--			)
+
+-- 2. Пользовательская функция возвращает среднюю цену товара конкретного вида. Вид товара передаётся в качестве
+-- параметра. Например, среднюю цену обуви
+--CREATE FUNCTION
+--	AVGPriceProduct(@Type NVARCHAR(50))
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				AVG(P.[Price]) AS [AVG Price]
+--			FROM
+--				Products P
+--			WHERE
+--				P.[Type] = @Type
+--			)
+
+-- 3. Пользовательская функция возвращает среднюю цену продажи по каждой дате, когда осуществлялись продажи
+--CREATE FUNCTION
+--	AVGPriceSaleDate()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				CAST(S.[Moment] AS DATE) AS [Date],
+--				AVG(S.[Price]) AS [AVG Price]
+--			FROM
+--				Sales S
+--			GROUP BY
+--				CAST(S.[Moment] AS DATE)
+--			ORDER BY
+--				1
+--			)
+
+-- 4. Пользовательская функция возвращает информацию о последнем проданном товаре. Критерий определения 
+-- последнего проданного товара: дата продажи
+--CREATE FUNCTION
+--	LastSaleProduct()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT TOP 1
+--				S.[Moment] AS [Date],
+--				P.[Name_Prod] AS [Product],
+--				S.[Cnt] AS [Cnt],
+--				S.[Price] AS [Price]
+--			FROM
+--				Sales S
+--				JOIN Products P ON P.[Id] = S.[Id_prod]
+--			ORDER BY
+--				1 DESC
+--			)
+
+-- 5. Пользовательская функция возвращает информацию о первом проданном товаре. Критерий определения первого
+-- проданного товара: дата продажи
+--CREATE FUNCTION
+--	FirstSaleProduct()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT TOP 1
+--				S.[Moment] AS [Date],
+--				P.[Name_Prod] AS [Product],
+--				S.[Cnt] AS [Cnt],
+--				S.[Price] AS [Price]
+--			FROM
+--				Sales S
+--				JOIN Products P ON P.[Id] = S.[Id_prod]
+--			ORDER BY
+--				1
+--			)
+
+-- 6. Пользовательская функция возвращает информацию о заданном виде товаров конкретного производителя. Вид
+-- товара и название производителя передаются в качестве параметров
+--CREATE FUNCTION
+--	InfoProduct(@Type NVARCHAR(50), @Manuf NVARCHAR(50))
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				P.[Name_Prod] AS [Product],
+--				M.[Name] AS [Manufactur],
+--				P.[Price] AS [Price]
+--			FROM
+--				Products P
+--				JOIN Manufactures M ON M.[Id] = P.[Id_manuf]
+--			WHERE
+--				P.[Name_Prod] = @Type AND
+--				M.[Name] = @Manuf
+--			)
+
+-- 7. Пользовательская функция возвращает информацию о покупателях, которым в этом году исполнится 45 лет
+--CREATE FUNCTION
+--	AgeBuyerYear()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				*
+--			FROM
+--				Buyers B
+--			WHERE
+--				B.[Age] + (YEAR(GETDATE()) - YEAR(B.[Date_Reg])) = 45
+--			ORDER BY
+--				B.[Name] + ' ' + B.[Surname]
+--			)
+
+-- Задание 2. Для базы данных «Музыкальная коллекция» из практического задания модуля «Работа с таблицами 
+-- и представлениями в MS SQL Server» создайте следующие пользовательские функции:
+
+-- 1. Пользовательская функция возвращает все диски заданного года. Год передаётся в качестве параметра
+--CREATE FUNCTION
+--	DiscYear(@Year INT)
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				*
+--			FROM
+--				MusicCollections M
+--			WHERE
+--				YEAR(M.[Date_prod]) = @Year
+--			ORDER BY
+--				M.[Name]
+--			)
+
+-- 2. Пользовательская функция возвращает информацию о дисках с одинаковым названием альбома, но разными исполнителями
+--CREATE FUNCTION
+--	GroupDiscAlbum()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				M1.[Name] AS [Name Album],
+--				E.[Name] AS [Executor],
+--				M1.[Style] AS [Style],
+--				M1.[Date_prod] AS [Production] 
+--			FROM
+--				MusicCollections M1
+--				JOIN MusicCollections M2 ON M2.[Id] = M2.[Id]
+--				JOIN Executors E ON E.[Id] = M.[Id_exec]
+--			WHERE
+--				M1.[Name] = M2.[Name] AND
+--				M1.[Id_exec] <> M2.[Id_exec]
+--			ORDER BY
+--				1
+--			)
+
+-- 3. Пользовательская функция возвращает информацию о всех песнях в чьем названии встречается заданное слово. 
+-- Слово передаётся в качестве параметра
+--CREATE FUNCTION
+--	AllSongsWord(@Word NVARCHAR(50))
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				*
+--			FROM
+--				Songs S
+--			WHERE
+--				S.[Name] LIKE '%@Word%'
+--			ORDER BY
+--				S.[Name]
+--			)
+
+-- 4. Пользовательская функция возвращает количество альбомов в стилях hard rock и heavy metal
+--CREATE FUNCTION
+--	CntAlbumStyleHRAndHM()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT N'Hard Rock' AS [Style],
+--				COUNT(M.[Id_alb]) AS [Album, cnt]
+--			FROM
+--				MusicCollections M
+--			WHERE
+--				M.[Style] = N'Hard Rock'
+--			UNION ALL
+--			SELECT N'Heavy Metal' AS [Style],
+--				COUNT(M.[Id_alb]) AS [Album, cnt]
+--			FROM
+--				MusicCollections M
+--			WHERE
+--				M.[Style] = N'Heavy Metal'
+--			)
+
+-- 5. Пользовательская функция возвращает информацию о средней длительности песни заданного исполнителя. Название
+-- исполнителя передаётся в качестве параметра
+--CREATE FUNCTION
+--	AVGTimeSongExecutor(@Exec NVARCHAR(50))
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				AVG(S.[Time]) AS [AVG Time]
+--			FROM
+--				Songs S
+--				JOIN Executors E ON E.[Id] = S.[Id_exec]
+--			WHERE
+--				E.[Name] = @Exec
+--			)
+
+-- 6. Пользовательская функция возвращает информацию о самой долгой и самой короткой песне
+--CREATE FUNCTION
+--	MinMaxTimeSong()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT N'Max Time Song' AS [Type],
+--				S.[Name] AS [Song],
+--				S.[Time] AS [Time]
+--			FROM
+--				Songs S
+--			WHERE
+--				S.[Time] = (SELECT MAX([Time]) FROM Songs)
+--			UNION ALL
+--			SELECT N'Min Time Song' AS [Type],
+--				S.[Name] AS [Song],
+--				S.[Time] AS [Time]
+--			FROM
+--				Songs S
+--			WHERE
+--				S.[Time] = (SELECT MIN([Time]) FROM Songs)
+--			)
+
+-- 7. Пользовательская функция возвращает информацию об исполнителях, которые создали альбомы в двух и более стилях.
+--CREATE FUNCTION
+--	ExecutorTwoMoreStyle()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				MAX(E.[Name] + ' ' + E.[Surname]) AS [Name Executor],
+--				COUNT(M.[Style]) AS [Style, cnt]
+--			FROM
+--				MusicCollections M
+--				JOIN Executors E ON E.[Id] = M.[Id_exec]
+--			GROUP BY
+--				E.[Id]
+--			HAVING
+--				COUNT(M.[Style]) > 1
+--			)
