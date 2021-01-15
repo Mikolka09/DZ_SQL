@@ -1,0 +1,267 @@
+﻿-- Задание 1. Используя триггеры, пользовательские функции, хранимые процедуры реализуйте следующую функциональность:
+
+-- 1. Вернуть информацию о барбере, который работает в барбершопе дольше всех
+--CREATE FUNCTION
+--	OldWorkBarber()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT TOP 1
+--				*
+--			FROM
+--				Barbers
+--			ORDER BY
+--				[Date_hiring]
+--			)
+
+-- 2. Вернуть информацию о барбере, который обслужил максимальное количество клиентов в указанном диапазоне
+-- дат. Даты передаются в качестве параметра
+--CREATE FUNCTION
+--	MaxCntClientDate(@date1 Date, @date2 Date)
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT TOP 1
+--				*
+--			FROM
+--				(SELECT
+--					SUM(A.[Id_Client]) AS [Clients]
+--				FROM
+--					Arhiv A
+--					JOIN Barbers B ON B.[Id] = A.[Id_barber]
+--				WHERE
+--					A.[Date] BETWEEN @date1 AND  @date2
+--				GROUP BY
+--					A.[Id_barber]
+--				) AS Tmp_Client
+--				JOIN Barbers B ON B.[Id] = Tmp_Client.[Id]
+--			ORDER BY
+--				Tmp_Client.[Clients] DESC
+--			)
+
+-- 3. Вернуть информацию о клиенте, который посетил барбершоп максимальное количество раз
+--CREATE FUNCTION
+--	MaxVistClient()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT TOP 1
+--				*
+--			FROM
+--				(SELECT
+--					A.[Id_client] AS [Id_Client],
+--					COUNT(A.[Date_Visit]) AS [Date, cnt]
+--				FROM
+--					Arhiv A
+--				GROUP BY
+--					A.[Client]
+--				) AS Tmp_Count
+--				JOIN Clients C ON C.[Id] = A.[Id_client]
+--			ORDER BY
+--				Tmp_Count.[Date, cnt] DESC
+--			)
+
+-- 4. Вернуть информацию о клиенте, который потратил в барбершопе максимальное количество денег
+--CREATE FUNCTION
+--	MaxMoneyClietns()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT TOP 1
+--				*
+--			FROM
+--				(SELECT
+--					A.[Id_client] AS [Id_Client],
+--					SUM(A.[Check_Sum]) AS [Check_Sum]
+--				FROM
+--					Arhiv A
+--				GROUP BY
+--					A.[Client]
+--				) AS Tmp_Sum
+--				JOIN Clients C ON C.[Id] = A.[Id_client]
+--			ORDER BY
+--				Tmp_Sum.[Check_Sum] DESC
+--			)
+
+-- 5. Вернуть информацию о самой длинной по времени услуге в барбершопе
+--CREATE FUNCTION
+--	MaxServiceTime()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT TOP 1
+--				*
+--			FROM
+--				[Services] S
+--			ORDER BY
+--				S.[Time] DESC
+--			)
+
+-- Задание 2. Используя триггеры, пользовательские функции, хранимые процедуры реализуйте следующую функциональность:
+
+-- 1. Вернуть информацию о самом популярном барбере (по количеству клиентов)
+--CREATE FUNCTION
+--	PopularBarber()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT TOP 1
+--				B.[Name] + ' ' + B.[Surname] AS [Name Barber],
+--				Tmp_Sum.[Summ_Client] AS [Clients, cnt]
+--			FROM
+--				(SELECT
+--					SUM(A.[Id_client]) AS [Summ_Client]
+--				FROM
+--					Arhiv A
+--				GROUP BY
+--					A.[Id_barber]
+--				) AS Tmp_Sum
+--				JOIN Barbers B ON B.[Id] = Tmp_Sum.[Id] 
+--			ORDER BY
+--				Tmp_Sum.[Summ_Client] DESC
+--			)
+
+-- 2. Вернуть топ-3 барберов за месяц (по сумме денег, потраченной клиентами)
+--CREATE FUNCTION
+--	Top3BarberOfMoney()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT TOP 3
+--				B.[Name] + ' ' + B.[Surname] AS [Name Barber]
+--			FROM
+--				(SELECT
+--					SUM(A.[Check_Sum])/12 AS [Suma for month]
+--				FROM
+--					Arhiv A
+--				WHERE
+--					YEAR(A.[Date]) = 2020
+--				GROUP BY
+--					A.[Id_barber]
+--				) AS Tmp_Sum
+--				JOIN Barbers B ON B.[Id] = Tmp_Sum.[Id]
+--			ORDER BY
+--				Tmp_Sum.[Suma for month] DESC
+--			)
+
+-- 3. Вернуть топ-3 барберов за всё время (по средней оценке). Количество посещений клиентов не меньше 30
+--CREATE FUNCTION
+--	Top3BarberOfBall()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT TOP 3
+--				B.[Name] + ' ' + B.[Surname] AS [Name Barber]
+--			FROM
+--				(SELECT
+--					AVG(A.[Ball]) AS [Sum_Ball]
+--				FROM
+--					Arhiv A
+--				GROUP BY
+--					A.[Id_barber]
+--				HAVING
+--					SUM(A.[Id_client]) >= 30
+--				) AS Tmp_Sum
+--				JOIN Barbers B ON B.[Id] = Tmp_Sum.[Id]
+--			ORDER BY
+--				Tmp_Sum.[Sum_Ball] DESC
+--			)
+
+-- 4. Показать расписание на день конкретного барбера. Информация о барбере и дне передаётся в качестве параметра
+--CREATE PROCEDURE
+--	UnravelingDayBarber
+--	@name NVARCHAR(100),
+--	@day DATE
+--AS
+--	SELECT
+--		B.[Name] AS [Name Barber],
+--		U.[Date] AS [Date],
+--		U.[Unraveling] AS [Unraveling Barber]
+--	FROM
+--		UnravelingBarber U
+--		JOIN Barbers B ON B.[Id] = U.[Id_barber]
+--	WHERE
+--		B.[Name] = @name AND
+--		U.[Date] = @date
+
+-- 5. Показать свободные временные слоты на неделю конкретного барбера. Информация о барбере и дне передаётся
+-- в качестве параметра
+--CREATE PROCEDURE
+--	UnravelingDayBarber
+--	@name NVARCHAR(100),
+--	@day DATE
+--AS
+--	SELECT
+--		B.[Name] AS [Name Barber],
+--		U.[Date] AS [Date],
+--		COALESCE(U.[Unraveling], 'Свободно') AS [Unraveling Barber]
+--	FROM
+--		UnravelingBarber U
+--		LEFT JOIN Barbers B ON B.[Id] = U.[Id_barber]
+--	WHERE
+--		B.[Name] = @name AND
+--		U.[Date] = @date
+
+-- 6. Перенести в архив информацию о всех уже завершенных услугах (это те услуги, которые произошли в прошлом)
+--CREATE PROCEDURE
+--	TransferСompletedService
+--AS
+--	SELECT 
+--		* 
+--	INTO 
+--		Arhiv 
+--	FROM 
+--		Barbers B 
+--		JOIN Clients C ON C.[Id_barber] = B.[Id] 
+--	WHERE 
+--	UnravelingBarber.[Date] < GETDATE()
+		
+-- 7. Запретить записывать клиента к барберу на уже занятое время и дату
+--CREATE TRIGGER
+--	StopInsertClient
+--	ON UnravelingBarber
+--	AFTER INSERT
+--AS
+--	IF (SELECT U.[Date_Pos] FROM UnravelingBarber U) IS NOT NULL
+--		BEGIN
+--			PRINT 'Записать не возможно, время занято!'
+--			RETURN
+--		END
+--	ELSE
+--		INSERT INTO [UnravelingBarber] SELECT * FROM inserted
+
+-- 8. Запретить добавление нового джуниор-барбера, если в салоне уже работают 5 джуниор-барберов
+--CREATE TRIGGER
+--	StopInsertBarber
+--	ON Barbers
+--	AFTER INSERT
+--AS
+--	IF (SELECT COUNT(B.[Id]) FROM Barbers B WHERE B.[Pos_barber] = N'Джуниор') = 5
+--		BEGIN
+--			PRINT 'Записать не возможно, позиция джуниор-барбера укомплектована!'
+--			RETURN
+--		END
+--	ELSE
+--		INSERT INTO [Barbers] SELECT * FROM inserted
+
+-- 9. Вернуть информацию о клиентах, которые не поставили ни одного фидбека и ни одной оценки
+--CREATE FUNCTION
+--	InfoClientIsNullFitbecAndApp()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				*
+--			FROM
+--				Clients C
+--			WHERE
+--				C.[Fitbec] IS NULL AND
+--				C.[App] IS NULL
+--			)
+
+-- 10. Вернуть информацию о клиентах, которые не посещали барбершоп свыше одного года
+--CREATE FUNCTION
+--	ClientNotVisitMoreOneYear()
+--	RETURNS TABLE
+--AS
+--	RETURN (SELECT
+--				C.[Name] + ' ' + C.[Surname] AS [Name Client],
+--				C.[Phone] AS [Phone Client],
+--				C.[Email] AS [Email Client]
+--			FROM
+--				Arhiv A
+--				JOIN Clients C ON C.[Id] = A.[Id_client]
+--			WHERE
+--				YEAR(GETDATE()) - YEAR(A.[Date]) > 1
+--			)
